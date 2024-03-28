@@ -1,5 +1,5 @@
-#ifndef MCOROUTINE_COMMON_COROUTINE_MEMORY_H
-#define MCOROUTINE_COMMON_COROUTINE_MEMORY_H
+#ifndef MCOROUTINE_COROUTINE_MEMORY_H
+#define MCOROUTINE_COROUTINE_MEMORY_H
 
 #include "coroutine/utils.h"
 #include <atomic>
@@ -11,37 +11,50 @@
 
 MCOROUTINE_NAMESPACE_BEGIN
 
-class Memory {
-public:
-	using u_ptr = std::unique_ptr<Memory>;
-	using s_ptr = std::shared_ptr<Memory>;
+class MemoryBlockGroup {
 
 public:
-	Memory(uint32_t block_size, uint32_t block_count);
-	~Memory();
+	MemoryBlockGroup(uint32_t block_size, uint32_t block_group_size) noexcept;
 
-	uint32_t getRefCount() { return m_ref_counts; }
+public:
+	std::unique_ptr<uint8_t> m_start; // 内存池内部空间起始位置，持有内存所有权
+	std::vector<bool> m_use_flags{}; // 块引用标志，改用 bitset 节约空间
+};
 
-	uint8_t* getStart() { return m_start.get(); }
-	uint8_t* getEnd() { return m_start.get() + m_size - 1; }
+class MemoryPool {
+public:
+	using u_ptr = std::unique_ptr<MemoryPool>;
+	using s_ptr = std::shared_ptr<MemoryPool>;
 
-	uint8_t* getBlock();
-	void backBlock(const uint8_t* addr);
-	bool hasBlock(const uint8_t* addr);
+public:
+	MemoryPool(uint32_t block_size, uint32_t block_count,
+	           uint32_t block_group_size = 128);
+	~MemoryPool();
+
+	uint32_t getUseCount() const { return m_use_counts; } // 获取已经使用块数目
+	uint32_t getAllCount() const { return m_all_counts; } // 获取全部块数目
+
+	uint8_t* getBlock();                // 读取内存块
+	void backBlock(uint8_t* addr);      // 归还块
+	bool hasBlock(const uint8_t* addr); // 判断是否存在块
+
+	void recovery();	// 回收资源
 
 private:
-	uint32_t m_block_size{0};  // 内存块字节数
-	uint32_t m_block_count{0}; // 内存块数目
+	std::pair<bool, uint32_t> hasBlockHelp(const uint8_t* addr);
 
-	uint32_t m_size{0}; // 内存字节数
-	std::unique_ptr<uint8_t> m_start; // 内存池内部空间起始位置，持有内存所有权
+private:
+	uint32_t m_block_size{0};              // 内存块字节数
+	std::atomic<uint32_t> m_all_counts{0}; // 内存块总数
+	std::atomic<uint32_t> m_use_counts{0}; // 已使用内存块数
 
-	std::atomic<uint32_t> m_ref_counts{0}; // 引用内存块数
-	std::vector<bool> m_blocks; // 块引用标志，改用 bitset 节约空间
-	std::mutex m_mutex;         // 内存池锁
+	std::vector<MemoryBlockGroup>
+	    m_block_groups{}; // 内存组数组，实现动态扩张且避免迭代器失效
+	std::mutex m_mutex; // 内存池锁
+
+	const uint32_t m_block_group_size; // 单个内存组内内存块个数
 };
 
 MCOROUTINE_NAMESPACE_END
-
 
 #endif

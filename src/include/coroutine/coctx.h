@@ -1,9 +1,9 @@
-#ifndef TINYRPC_COMMON_COROUTINE_COCTX_H
-#define TINYRPC_COMMON_COROUTINE_COCTX_H
+#ifndef MCOROUTINE_COROUTINE_COCTX_H
+#define MCOROUTINE_COROUTINE_COCTX_H
 
 #include "coroutine/utils.h"
 
-MRPC_NAMESPACE_BEGIN
+MCOROUTINE_NAMESPACE_BEGIN
 
 // 几个常见寄存器
 enum {
@@ -27,6 +27,6 @@ extern void coctx_swap(coctx*, coctx*) asm("coctx_swap");		// 执行交换
 
 };
 
-MRPC_NAMESPACE_END
+MCOROUTINE_NAMESPACE_END
 
 #endif
