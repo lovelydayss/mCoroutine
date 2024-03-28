@@ -42,27 +42,29 @@ MCOROUTINE_NAMESPACE_BEGIN
 
 #else
 
-#define SETLOGLEVEL(level)
-#define SETLOGHEADER(header)
+#define SETLOGLEVEL(level) ;
+#define SETLOGHEADER(header) ;
 
-#define DEBUGFMTLOG(str, ...)
-#define INFOFMTLOG(str, ...)
-#define WARNINGFMTLOG(str, ...)
-#define ERRORFMTLOG(str, ...)
+#define DEBUGFMTLOG(str, ...) ;
+#define INFOFMTLOG(str, ...) ;
+#define WARNINGFMTLOG(str, ...) ;
+#define ERRORFMTLOG(str, ...) ;
 
-#define DEBUGFMTLOG_ONCE(str, ...)
-#define INFOFMTLOG_ONCE(str, ...)
-#define WARNINGFMTLOG_ONCE(str, ...)
-#define ERRORFMTLOG_ONCE(str, ...)
+#define DEBUGFMTLOG_ONCE(str, ...) ;
+#define INFOFMTLOG_ONCE(str, ...) ;
+#define WARNINGFMTLOG_ONCE(str, ...) ;
+#define ERRORFMTLOG_ONCE(str, ...) ;
 
-#define POLL()
-#define CREATEPOLLTHREAD(t) 
+#define POLL() ;
+#define CREATEPOLLTHREAD(t) ;
 
-#define SETLOGFILE(file, flag)
-#define CLOSELOGFILE()
+#define SETLOGFILE(file, flag) ;
+#define CLOSELOGFILE() ;
 
 #endif
 
+#define likely(x) __builtin_expect(!!(x), 1) 
+#define unlikely(x) __builtin_expect(!!(x), 0)
 
 MCOROUTINE_NAMESPACE_END
 

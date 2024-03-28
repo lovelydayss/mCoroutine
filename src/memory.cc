@@ -22,6 +22,9 @@ MemoryPool::MemoryPool(uint32_t block_size, uint32_t block_count,
                        uint32_t block_group_size /* = 128*/)
     : m_block_size(block_size)
     , m_block_group_size(block_group_size) {
+	
+	if(unlikely(block_size == 0))
+		ERRORFMTLOG("error, block_size == 0 may caused undefined behavior!!");
 
 	uint32_t group_count = block_count / m_block_group_size + 1;
 
@@ -76,7 +79,7 @@ void MemoryPool::backBlock(uint8_t* addr) {
 		}
 	}
 
-	ERRORFMTLOG("error, this block is not belong to this Memory%");
+	ERRORFMTLOG("error, this block is not belong to this Memory");
 }
 
 bool MemoryPool::hasBlock(const uint8_t* addr) {
@@ -88,13 +91,16 @@ void MemoryPool::recovery() {
 	std::lock_guard<std::mutex> lk(m_mutex);
 
 	for (auto& block_group : m_block_groups) {
-
+		
 		auto& use_flags = block_group.m_use_flags;
 		auto search_block = std::find(use_flags.begin(), use_flags.end(), true);
 
 		if (search_block == use_flags.end()) { // 组内全部块均未使用，可以释放掉该空间
+			
 			std::swap(block_group, m_block_groups.back());
 			m_block_groups.pop_back();
+
+			m_all_counts -= m_block_group_size;
 		}
 	}
 }
