@@ -13,7 +13,7 @@ MCOROUTINE_NAMESPACE_BEGIN
 MemoryBlockGroup::MemoryBlockGroup(uint32_t block_size,
                                    uint32_t block_group_size) noexcept {
 	
-	m_start = std::unique_ptr<uint8_t>(static_cast<uint8_t*>(malloc(block_group_size * block_size)));	
+	m_start = std::unique_ptr<uint8_t, free_delete>(static_cast<uint8_t*>(malloc(block_group_size * block_size)));	
 	m_use_flags.resize(block_group_size, false);
 	// std::fill(m_use_flags.begin(), m_use_flags.end(), false);
 

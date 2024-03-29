@@ -14,10 +14,15 @@ MCOROUTINE_NAMESPACE_BEGIN
 class MemoryBlockGroup {
 
 public:
+	struct free_delete {
+		void operator()(void* x) { free(x); }
+	};
+
+public:
 	MemoryBlockGroup(uint32_t block_size, uint32_t block_group_size) noexcept;
 
 public:
-	std::unique_ptr<uint8_t> m_start; // 内部空间起始位置，持有内存所有权
+	std::unique_ptr<uint8_t, free_delete> m_start; // 内部空间起始位置，持有内存所有权
 	std::vector<bool> m_use_flags{}; // 块引用标志，改用 bitset 节约空间
 };
 
@@ -40,11 +45,11 @@ public:
 
 	void recovery(); // 回收资源
 
-public:
+private:
 	std::pair<bool, uint32_t> hasBlockHelp(const uint8_t* addr);
 	bool usedBlockHelp(const uint8_t* addr);
 
-public:
+private:
 	std::atomic<uint32_t> m_all_counts{0}; // 内存块总数
 	std::atomic<uint32_t> m_use_counts{0}; // 已使用内存块数
 

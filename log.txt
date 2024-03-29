@@ -1,0 +1,57 @@
+==14558== Memcheck, a memory error detector
+==14558== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==14558== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==14558== Command: ./build/linux/x86_64/debug/test_memory
+==14558== Parent PID: 4815
+==14558== 
+==14558== Mismatched free() / delete / delete []
+==14558==    at 0x4C3323B: operator delete(void*) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==14558==    by 0x11DEE0: std::default_delete<unsigned char>::operator()(unsigned char*) const (unique_ptr.h:78)
+==14558==    by 0x11947A: std::unique_ptr<unsigned char, std::default_delete<unsigned char> >::~unique_ptr() (unique_ptr.h:263)
+==14558==    by 0x119F23: mcoroutine::MemoryBlockGroup::~MemoryBlockGroup() (memory.h:14)
+==14558==    by 0x125DCD: void __gnu_cxx::new_allocator<mcoroutine::MemoryBlockGroup>::destroy<mcoroutine::MemoryBlockGroup>(mcoroutine::MemoryBlockGroup*) (new_allocator.h:140)
+==14558==    by 0x11ED68: void std::allocator_traits<std::allocator<mcoroutine::MemoryBlockGroup> >::destroy<mcoroutine::MemoryBlockGroup>(std::allocator<mcoroutine::MemoryBlockGroup>&, mcoroutine::MemoryBlockGroup*) (alloc_traits.h:487)
+==14558==    by 0x11A03E: std::vector<mcoroutine::MemoryBlockGroup, std::allocator<mcoroutine::MemoryBlockGroup> >::pop_back() (stl_vector.h:979)
+==14558==    by 0x1103C7: mcoroutine::MemoryPool::recovery() (memory.cc:105)
+==14558==    by 0x15F73F: DOCTEST_ANON_FUNC_16() (test_memory.cc:81)
+==14558==    by 0x15DC53: doctest::Context::run() (doctest.h:7007)
+==14558==    by 0x15E62B: main (doctest.h:7085)
+==14558==  Address 0x5ecc010 is 0 bytes inside a block of size 16,384 alloc'd
+==14558==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==14558==    by 0x10FB4B: mcoroutine::MemoryBlockGroup::MemoryBlockGroup(unsigned int, unsigned int) (memory.cc:16)
+==14558==    by 0x12550D: void __gnu_cxx::new_allocator<mcoroutine::MemoryBlockGroup>::construct<mcoroutine::MemoryBlockGroup, unsigned int const&, unsigned int const&>(mcoroutine::MemoryBlockGroup*, unsigned int const&, unsigned int const&) (new_allocator.h:136)
+==14558==    by 0x11E5D7: void std::allocator_traits<std::allocator<mcoroutine::MemoryBlockGroup> >::construct<mcoroutine::MemoryBlockGroup, unsigned int const&, unsigned int const&>(std::allocator<mcoroutine::MemoryBlockGroup>&, mcoroutine::MemoryBlockGroup*, unsigned int const&, unsigned int const&) (alloc_traits.h:475)
+==14558==    by 0x11E6B7: void std::vector<mcoroutine::MemoryBlockGroup, std::allocator<mcoroutine::MemoryBlockGroup> >::_M_realloc_insert<unsigned int const&, unsigned int const&>(__gnu_cxx::__normal_iterator<mcoroutine::MemoryBlockGroup*, std::vector<mcoroutine::MemoryBlockGroup, std::allocator<mcoroutine::MemoryBlockGroup> > >, unsigned int const&, unsigned int const&) (vector.tcc:415)
+==14558==    by 0x119A83: mcoroutine::MemoryBlockGroup& std::vector<mcoroutine::MemoryBlockGroup, std::allocator<mcoroutine::MemoryBlockGroup> >::emplace_back<unsigned int const&, unsigned int const&>(unsigned int const&, unsigned int const&) (vector.tcc:105)
+==14558==    by 0x10FD9E: mcoroutine::MemoryPool::MemoryPool(unsigned int, unsigned int, unsigned int) (memory.cc:36)
+==14558==    by 0x15E88F: DOCTEST_ANON_FUNC_16() (test_memory.cc:20)
+==14558==    by 0x15DC53: doctest::Context::run() (doctest.h:7007)
+==14558==    by 0x15E62B: main (doctest.h:7085)
+==14558== 
+==14558== 
+==14558== HEAP SUMMARY:
+==14558==     in use at exit: 1,049,116 bytes in 2 blocks
+==14558==   total heap usage: 94 allocs, 92 frees, 1,599,972 bytes allocated
+==14558== 
+==14558== 1,048,960 bytes in 1 blocks are definitely lost in loss record 2 of 2
+==14558==    at 0x4C340A6: memalign (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==14558==    by 0x50F038C: operator new(unsigned long, std::align_val_t) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25)
+==14558==    by 0x11C2D5: fmtlogDetailT<0>::preallocate() (fmtlog-inl.h:290)
+==14558==    by 0x11521E: fmtlogT<0>::preallocate() (fmtlog-inl.h:541)
+==14558==    by 0x11599C: fmtlogT<0>::allocMsg(unsigned int, bool) (fmtlog-inl.h:527)
+==14558==    by 0x1198FC: void fmtlogT<0>::log<>(unsigned int&, long, char const*, fmtlogT<0>::LogLevel, fmt::v10::basic_format_string<char>) (fmtlog.h:685)
+==14558==    by 0x15E6F9: DOCTEST_ANON_FUNC_14() (test_memory.cc:13)
+==14558==    by 0x15DC53: doctest::Context::run() (doctest.h:7007)
+==14558==    by 0x15E62B: main (doctest.h:7085)
+==14558== 
+==14558== LEAK SUMMARY:
+==14558==    definitely lost: 1,048,960 bytes in 1 blocks
+==14558==    indirectly lost: 0 bytes in 0 blocks
+==14558==      possibly lost: 0 bytes in 0 blocks
+==14558==    still reachable: 156 bytes in 1 blocks
+==14558==         suppressed: 0 bytes in 0 blocks
+==14558== Reachable blocks (those to which a pointer was found) are not shown.
+==14558== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==14558== 
+==14558== For counts of detected and suppressed errors, rerun with: -v
+==14558== ERROR SUMMARY: 17 errors from 2 contexts (suppressed: 0 from 0)
