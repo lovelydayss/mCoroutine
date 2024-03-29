@@ -17,8 +17,8 @@ public:
 	MemoryBlockGroup(uint32_t block_size, uint32_t block_group_size) noexcept;
 
 public:
-	std::unique_ptr<uint8_t> m_start; // 内存池内部空间起始位置，持有内存所有权
-	std::vector<bool> m_use_flags{}; // 块引用标志，改用 bitset 节约空间
+	std::unique_ptr<uint8_t> m_start;   // 内部空间起始位置，持有内存所有权
+	std::vector<bool> m_use_flags{}; 	// 块引用标志，改用 bitset 节约空间
 };
 
 class MemoryPool {
@@ -29,7 +29,7 @@ public:
 public:
 	MemoryPool(uint32_t block_size, uint32_t block_count,
 	           uint32_t block_group_size = 128);
-	~MemoryPool();
+	~MemoryPool() = default;
 
 	uint32_t getUseCount() const { return m_use_counts; } // 获取已经使用块数目
 	uint32_t getAllCount() const { return m_all_counts; } // 获取全部块数目
@@ -42,6 +42,7 @@ public:
 
 public:
 	std::pair<bool, uint32_t> hasBlockHelp(const uint8_t* addr);
+	bool usedBlockHelp(const uint8_t* addr);
 
 public:
 	uint32_t m_block_size{0};              // 内存块字节数

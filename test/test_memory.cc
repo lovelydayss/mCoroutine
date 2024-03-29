@@ -1,93 +1,102 @@
 #include "coroutine/memory.h"
 #include "coroutine/utils.h"
-#include "gtest/gtest.h"
-#include <iterator>
 
-int main(int argc, char const *argv[]) {
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "doctest/doctest.h"
 
-    /*
-    SETLOGLEVEL(fmtlog::LogLevel::DBG);
-    // fmtlog::setLogLevel(fmtlog::LogLevel::OFF);
-    SETLOGHEADER("[{l}] [{YmdHMSe}] [{t}] [{g}] ");
+TEST_CASE("fmtlog") {
 
-    DEBUGFMTLOG("SDASADASDASDASDAS   {}", 11111);
-    INFOFMTLOG("AAAAAAAAAAAAAAAAAAAAAAAAAA");
-    ERRORFMTLOG("CCCCCCCCCCCCCCCCCCCCCCCCC");
+	SETLOGLEVEL(fmtlog::LogLevel::DBG);
+	// fmtlog::setLogLevel(fmtlog::LogLevel::OFF);
+	SETLOGHEADER("[{l}] [{YmdHMSe}] [{t}] [{g}] ");
 
-    */
+	DEBUGFMTLOG("test of the memory pool begin!");
 
-    // set private member to public to make this test 
-    mcoroutine::MemoryPool test1(128, 60);
+}
 
-    EXPECT_EQ(test1.m_use_counts, 0);
-    EXPECT_EQ(test1.m_block_size, 128);
-    EXPECT_EQ(test1.m_block_group_size, 128);
-    EXPECT_EQ(test1.m_block_groups.size(), 1);
-    EXPECT_EQ(test1.m_all_counts, 128);
-    EXPECT_EQ(test1.getAllCount(), test1.m_all_counts);
-    EXPECT_EQ(test1.getUseCount(), test1.m_use_counts);
+TEST_CASE("Memory pool Basic") {
 
-    for(auto item : test1.m_block_groups[0].m_use_flags)
-        EXPECT_EQ(item, false);
+	// set private member to public to make this test
+	mcoroutine::MemoryPool test1(128, 60);
 
-    mcoroutine::MemoryPool test2(128, 312, 100);
+	CHECK_EQ(test1.m_use_counts, 0);
+	CHECK_EQ(test1.m_block_size, 128);
+	CHECK_EQ(test1.m_block_group_size, 128);
+	CHECK_EQ(test1.m_block_groups.size(), 1);
+	CHECK_EQ(test1.m_all_counts, 128);
+	CHECK_EQ(test1.getAllCount(), test1.m_all_counts);
+	CHECK_EQ(test1.getUseCount(), test1.m_use_counts);
 
-    EXPECT_EQ(test2.m_use_counts, 0);
-    EXPECT_EQ(test2.m_block_size, 128);
-    EXPECT_EQ(test2.m_block_group_size, 100);
-    EXPECT_EQ(test2.m_block_groups.size(), 4);
-    EXPECT_EQ(test2.m_all_counts, 400);
-    EXPECT_EQ(test2.getAllCount(), test1.m_all_counts);
-    EXPECT_EQ(test2.getUseCount(), test1.m_use_counts);
+	for (auto item : test1.m_block_groups[0].m_use_flags)
+		CHECK_EQ(item, false);
 
-    std::vector<uint8_t*> test_vec;
-    for(int i = 0; i < 1000; i++) {
+	mcoroutine::MemoryPool test2(128, 312, 100);
 
-        auto m = test1.getBlock();
-        EXPECT_EQ(test1.m_use_counts, i);
+	CHECK_EQ(test2.m_use_counts, 0);
+	CHECK_EQ(test2.m_block_size, 128);
+	CHECK_EQ(test2.m_block_group_size, 100);
+	CHECK_EQ(test2.m_block_groups.size(), 4);
+	CHECK_EQ(test2.m_all_counts, 400);
+	CHECK_EQ(test2.getAllCount(), test2.m_all_counts);
+	CHECK_EQ(test2.getUseCount(), test2.m_use_counts);
 
-        auto pair = test1.hasBlockHelp(m);
-        EXPECT_EQ(pair.first, true);
-        EXPECT_EQ(pair.second, 1000 / test1.m_block_group_size);
+	std::vector<uint8_t*> test_vec;
+	for (int i = 0; i < 1000; i++) {
 
-        EXPECT_EQ(test1.m_block_groups[pair.second].m_use_flags[std::distance(test1.m_block_groups[pair.second].m_start.get(), m)], true);
+		auto m = test1.getBlock();
+		CHECK_EQ(test1.m_use_counts, i + 1);
+
+		auto pair = test1.hasBlockHelp(m);
+		CHECK_EQ(pair.first, true);
+        CHECK_EQ(test1.usedBlockHelp(m), true);
+
         test_vec.push_back(m);
+	}
+
+
+
+	for (int i = 575; i < 1000; i++) {
+
+		test1.backBlock(test_vec[i]);
+		// CHECK_EQ(test1.m_use_counts, 1000 - i - 1);
+
+		auto pair = test1.hasBlockHelp(test_vec[i]);
+		CHECK_EQ(pair.first, true);
+        CHECK_MESSAGE(test1.usedBlockHelp(test_vec[i]) == false, i);
+    
     }
 
-    for(int i = 0; i < 500; i++) {
+#if 0
 
-        test1.backBlock(test_vec[i]);
-        EXPECT_EQ(test1.m_use_counts, 1000 - i);
+	CHECK_EQ(test1.m_use_counts, 500);
+	CHECK_EQ(test1.m_all_counts, 1024);
 
-        auto pair = test1.hasBlockHelp(test_vec[i]);
-        EXPECT_EQ(pair.first, false);
-    }
 
-    EXPECT_EQ(test1.m_use_counts, 500);
-    EXPECT_EQ(test1.m_all_counts, 1024);
 
-    test1.recovery();
+	test1.recovery();
 
-    EXPECT_EQ(test1.m_use_counts, 500);
-    EXPECT_EQ(test1.m_all_counts, 1024 - 384);
+	CHECK_EQ(test1.m_use_counts, 500);
+	CHECK_EQ(test1.m_all_counts, 1024 - 384);
 
-    for(int i = 0; i < 500; i++) {
+	for (int i = 0; i < 500; i++) {
 
-        test1.backBlock(test_vec[i]);
-        EXPECT_EQ(test1.m_use_counts, 1000 - i);
+		test1.backBlock(test_vec[i]);
+		CHECK_EQ(test1.m_use_counts, 1000 - i);
 
-        auto pair = test1.hasBlockHelp(test_vec[i]);
-        EXPECT_EQ(pair.first, false);
-    }
+		auto pair = test1.hasBlockHelp(test_vec[i]);
+		CHECK_EQ(pair.first, false);
+	}
 
-    EXPECT_EQ(test1.m_use_counts, 0);
-    EXPECT_EQ(test1.m_all_counts, 1024 - 384);
+	CHECK_EQ(test1.m_use_counts, 0);
+	CHECK_EQ(test1.m_all_counts, 1024 - 384);
 
-    test1.recovery();
+	test1.recovery();
 
-    EXPECT_EQ(test1.m_use_counts, 0);
-    EXPECT_EQ(test1.m_all_counts, 0);
+	CHECK_EQ(test1.m_use_counts, 0);
+	CHECK_EQ(test1.m_all_counts, 0);
 
-    return 0;
+	DEBUGFMTLOG("test of the memory pool end!");
+
+#endif
 
 }

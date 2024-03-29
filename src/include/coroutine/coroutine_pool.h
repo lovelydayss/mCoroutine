@@ -23,8 +23,6 @@ public:
     explicit CoroutinePool(uint32_t pool_size, uint32_t stack_size = 1024 * 128);
     ~CoroutinePool() = default;
 
-    
-
 private:
 	uint32_t m_pool_size{0};        // 协程池内协程数目   
 	uint32_t m_stack_size{0};       // 协程栈大小
