@@ -2,6 +2,7 @@
 #include "coroutine/utils.h"
 #include <algorithm>
 #include <cstdint>
+#include <cstdlib>
 #include <iterator>
 #include <memory>
 #include <mutex>
@@ -11,13 +12,13 @@ MCOROUTINE_NAMESPACE_BEGIN
 
 MemoryBlockGroup::MemoryBlockGroup(uint32_t block_size,
                                    uint32_t block_group_size) noexcept {
-	m_start = std::make_unique<uint8_t>(block_group_size * block_size);
-
+	
+	m_start = std::unique_ptr<uint8_t>(static_cast<uint8_t*>(malloc(block_group_size * block_size)));	
 	m_use_flags.resize(block_group_size, false);
 	// std::fill(m_use_flags.begin(), m_use_flags.end(), false);
 
-	INFOFMTLOG("succ mmap {0} bytes in memory pool",
-	           block_group_size * block_size);
+	INFOFMTLOG("succ mmap {} bytes in memory pool, group_size = {}, block_size = {}, start address = {}",
+	           block_group_size * block_size, block_group_size, block_size, (void*)m_start.get());
 }
 
 MemoryPool::MemoryPool(uint32_t block_size, uint32_t block_count,
@@ -49,6 +50,7 @@ uint8_t* MemoryPool::getBlock() {
 		if (search_block != use_flags.end()) {
 			*search_block = true;
 			m_use_counts++; // 分配成功
+
 			return block_group.m_start.get() +
 			       distance(use_flags.begin(), search_block) * m_block_size;
 		}
@@ -88,19 +90,24 @@ bool MemoryPool::hasBlock(const uint8_t* addr) {
 void MemoryPool::recovery() {
 
 	std::lock_guard<std::mutex> lk(m_mutex);
+	uint32_t count = 0;
 
-	for (auto& block_group : m_block_groups) {
+	// 这里数组动态长度在变，所以不能用 range 写法
+	for (int i = 0; i < m_block_groups.size();) {
 
-		auto& use_flags = block_group.m_use_flags;
+		auto& use_flags = m_block_groups[i].m_use_flags;
 		auto search_block = std::find(use_flags.begin(), use_flags.end(), true);
 
 		if (search_block ==
 		    use_flags.end()) { // 组内全部块均未使用，可以释放掉该空间
 
-			std::swap(block_group, m_block_groups.back());
+			std::swap(m_block_groups[i], m_block_groups.back());
 			m_block_groups.pop_back();
 
 			m_all_counts -= m_block_group_size;
+		}
+		else {
+			i++;
 		}
 	}
 }
