@@ -32,10 +32,14 @@ public:
 	using s_ptr = std::shared_ptr<MemoryPool>;
 
 public:
-	MemoryPool(uint32_t block_size, uint32_t block_count,
+	MemoryPool(uint32_t block_count, uint32_t block_size, 
 	           uint32_t block_group_size = 128);
 	~MemoryPool() = default;
 
+	MemoryPool(const MemoryPool& rhs) = delete;
+	MemoryPool& operator=(const MemoryPool& rhs) = delete;
+
+public:
 	uint32_t getUseCount() const { return m_use_counts; } // 获取已经使用块数目
 	uint32_t getAllCount() const { return m_all_counts; } // 获取全部块数目
 

@@ -21,7 +21,7 @@ MemoryBlockGroup::MemoryBlockGroup(uint32_t block_size,
 	           block_group_size * block_size, block_group_size, block_size, (void*)m_start.get());
 }
 
-MemoryPool::MemoryPool(uint32_t block_size, uint32_t block_count,
+MemoryPool::MemoryPool(uint32_t block_count, uint32_t block_size, 
                        uint32_t block_group_size /* = 128 */)
     : m_block_size(block_size)
     , m_block_group_size(block_group_size) {
@@ -32,6 +32,7 @@ MemoryPool::MemoryPool(uint32_t block_size, uint32_t block_count,
 	uint32_t group_count = block_count / m_block_group_size + 1;
 	m_all_counts = group_count * block_group_size;
 
+	m_block_groups.reserve(static_cast<uint32_t>(group_count * 1.5));		// 提前扩容
 	for (int i = 0; i < group_count; i++)
 		m_block_groups.emplace_back(m_block_size, m_block_group_size);
 }

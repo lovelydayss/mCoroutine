@@ -63,6 +63,20 @@ MCOROUTINE_NAMESPACE_BEGIN
 
 #endif
 
+#if __cplusplus >= 201402L
+
+#include <memory>
+
+#define MAKE_UNIQUE(T, args...) \
+    std::make_unique<T>(args)
+
+#else
+
+#define MAKE_UNIQUE(T, args...) \
+    std::unique_ptr<T>(new T(args))
+
+#endif
+
 #define likely(x) __builtin_expect(!!(x), 1) 
 #define unlikely(x) __builtin_expect(!!(x), 0)
 
