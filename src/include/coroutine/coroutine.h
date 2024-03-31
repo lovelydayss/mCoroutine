@@ -59,7 +59,7 @@ public:
 	uint8_t* m_stack_sp{nullptr}; // coroutine stack pointer
 
 	bool m_cbfunc_running_flag{false}; // true -> the callback is running, flase -> the callback func is completed
-	bool m_resume_flag{false}; // true -> the coroutine can resume, false -> can't resume
+	bool m_resume_flag{false}; // true -> the coroutine can resume, false -> can't resume (just like set callback flag)
 
 	std::function<void()> m_call_back; // coroutine callback function
 

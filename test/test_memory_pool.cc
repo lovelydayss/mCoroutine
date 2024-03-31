@@ -17,7 +17,7 @@ TEST_CASE("fmtlog") {
 TEST_CASE("Memory pool Basic") {
 
 	// set private member to public to make this test
-	mcoroutine::MemoryPool test1(128, 60);
+	mcoroutine::MemoryPool test1(60, 128);
 
 	CHECK_EQ(test1.m_use_counts, 0);
 	CHECK_EQ(test1.m_block_size, 128);

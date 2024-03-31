@@ -1,7 +1,9 @@
 #include "coroutine/coroutine.h"
 #include "coroutine/utils.h"
+#include <atomic>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <memory>
 #include <mutex>
 
@@ -25,8 +27,6 @@ void runCallBack(Coroutine::ptr co) { /* NOLINT */
 	co->getCallBack()(); // runing calllbcak function
 	co->setCallBackRunningFlag(false);
 
-	// here coroutine's callback function finished, that means coroutine's life
-	// is over. we should return the main couroutine
 	Coroutine::Yield();
 }
 
@@ -108,12 +108,11 @@ void Coroutine::Yield() {
 		exit(1);
 	}
 
-	// 实际执行协程切换
 	Coroutine::ptr cor = GetCurrentCoroutine();
 	t_cur_coroutine = GetMainCoroutine();
 	coctx_swap(&(cor->m_coctx), &(GetMainCoroutine()->m_coctx));
-	DEBUGFMTLOG("swap back!");
 }
+
 void Coroutine::Resume(Coroutine::ptr cor) {
 
 	if (unlikely(GetCurrentCoroutine() != GetMainCoroutine())) {
@@ -131,10 +130,8 @@ void Coroutine::Resume(Coroutine::ptr cor) {
 		return;
 	}
 
-	// 实际执行协程切换
 	t_cur_coroutine = cor;
 	coctx_swap(&(t_main_coroutine->m_coctx), &(cor->m_coctx));
-	DEBUGFMTLOG("swap back!");
 }
 
 Coroutine::ptr Coroutine::GetMainCoroutine() {

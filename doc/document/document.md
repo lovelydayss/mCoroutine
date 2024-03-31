@@ -19,18 +19,17 @@ A tiny asymmetric stacked coroutine libraryu uses modern C++, based on OOP and R
 //                  | ----- coroutine_hook.h            --> some coroutine hook function (in mRPC)
 ```
 
-> **实现思路及更多原理性整理参考** [**conclusion**](./doc/conclusion/conclusion.md)
+> **实现思路及更多原理性整理参考** [**conclusion**](../conclude/conclusion.md)
 
 ### 编译环境
 
 项目中通过使用宏扩展等实现对于多版本的支持，支持使用 C++11/C++14/C++17 版本进行编译&nbsp;
 * C++11 编译版本即最基础版本，实现协程库基本功能，支持常规协程操作
 * C++14 编译版本添加使用 make_unique 进行 unique_ptr 的构造，保证异常安全
-* C++17 编译版本引入 [**fmt**](https://github.com/fmtlib/fmt) 风格的高性能异步日志库 [**fmtlog**](https://github.com/MengRao/fmtlog)，支持日志打印输出等功能
+* C++17 版本引入 [**fmt**](https://github.com/fmtlib/fmt) 风格的高性能异步日志库 [**fmtlog**](https://github.com/MengRao/fmtlog)，支持日志打印输出等功能
 
-### 测试环境
 
-测试使用开源测试框架 [**doctest**](https://github.com/doctest/doctest) 以及内存检查工具 **valgrind** 进行。
+
 
 ## 测试记录
 
@@ -87,11 +86,11 @@ public:
 };
 ```
 
-> **对于智能指针相关的整理可以参考** [**conclusion**](./doc/conclusion/conclusion.md)
+> **对于智能指针相关的整理可以参考** [**conclusion**](../conclude/conclusion.md)
 
 #### bug free && memory check
 
-![](./doc/document/images/test_memory.png)
+![](images/test_memory.png)
 
 ### Coroutine Pool && Coroutine
 
@@ -148,7 +147,7 @@ error: /usr/lib/gcc/x86_64-linux-gnu/7.5.0/../../../../include/c++/7.5.0/bits/st
 
 #### bug free && memory check
 
-![](./doc/document/images/test_coroutine_pool.png)
+![](images/test_coroutine_pool.png)
 
 
 

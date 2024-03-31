@@ -13,13 +13,18 @@ static std::once_flag sigleton_coroutine_pool_config;
 
 Config::ptr Config::GetGlobalConfig() {
     std::call_once(sigleton_coroutine_pool_config, [](){
+
+        CREATEPOLLTHREAD(MILLISECONDS(100));
+        SETLOGLEVEL(fmtlog::LogLevel::DBG);
+	    SETLOGHEADER("[{l}] [{YmdHMSe}] [{t}] [{g}] ");
+        
         g_coroutine_pool_config = MAKE_UNIQUE(Config);
     });
 
     return g_coroutine_pool_config.get();
 }
 
-void Config::setGlobalConfig(uint32_t pool_size, uint32_t stack_size) {
+void Config::SetGlobalConfig(uint32_t pool_size, uint32_t stack_size) {
 
     GetGlobalConfig()->m_pool_size = pool_size;
     GetGlobalConfig()->m_stack_size = stack_size;
@@ -47,7 +52,7 @@ CoroutinePool::CoroutinePool(uint32_t pool_size,
 	m_memory_pool = MAKE_UNIQUE(MemoryPool, pool_size, stack_size);
 
     m_coroutines.reserve(static_cast<uint32_t>(pool_size + 1));     // reserve to pool_size + 1
-	m_coroutines.emplace_back(true);    // problem: copy struct
+	m_coroutines.emplace_back(true);    // problem: copy construct
    
 	resize(pool_size);
 }
@@ -86,6 +91,11 @@ void CoroutinePool::backCoroutine(Coroutine::ptr cor) {
 	}
 
 	m_coroutines[index].second = false; // set coroutine as not used
+    m_coroutines[index].first->setCallBackRunningFlag(false);
+    m_coroutines[index].first->setResumeFlag(false);
+
+    DEBUGFMTLOG("back coroutin[{}]", cor->getCorId());
+
 }
 
 uint32_t CoroutinePool::getPoolSize() const {

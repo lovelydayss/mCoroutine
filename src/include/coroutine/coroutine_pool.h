@@ -5,6 +5,7 @@
 #include "coroutine/coroutine.h"
 #include "coroutine/memory.h"
 #include "coroutine/utils.h"
+#include <atomic>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -22,11 +23,11 @@ public:
 
 public:
     static Config::ptr GetGlobalConfig();
-    static void setGlobalConfig(uint32_t pool_size, uint32_t stack_size);
+    static void SetGlobalConfig(uint32_t pool_size, uint32_t stack_size);
 
 public:
-    uint32_t m_pool_size{128};
-    uint32_t m_stack_size{1024 * 128};
+    std::atomic<uint32_t> m_pool_size{128};
+    std::atomic<uint32_t> m_stack_size{1024 * 128};
 
 };
 
@@ -68,7 +69,7 @@ public:
     void backCoroutine(Coroutine::ptr cor); 
 
     uint32_t getPoolSize() const;
-    void resize(uint32_t new_size);      // just use to allocator more memory 
+    void resize(uint32_t new_size);
 
 public:
     static CoroutinePool::ptr GetGlobalCoroutinePool();
