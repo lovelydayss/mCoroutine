@@ -49,11 +49,11 @@ public:
 
 	void recovery(); // 回收资源
 
-private:
+public:
 	std::pair<bool, uint32_t> hasBlockHelp(const uint8_t* addr);
 	bool usedBlockHelp(const uint8_t* addr);
 
-private:
+public:
 	std::atomic<uint32_t> m_all_counts{0}; // 内存块总数
 	std::atomic<uint32_t> m_use_counts{0}; // 已使用内存块数
 

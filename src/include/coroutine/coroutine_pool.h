@@ -14,13 +14,14 @@
 MCOROUTINE_NAMESPACE_BEGIN
 
 // configure the coroutine pool
-class CoroutinePoolConfig {
+class Config {
 public:
-    using s_ptr = std::shared_ptr<CoroutinePoolConfig>;
-    using u_ptr = std::unique_ptr<CoroutinePoolConfig>;
+    using s_ptr = std::shared_ptr<Config>;
+    using u_ptr = std::unique_ptr<Config>;
+    using ptr = Config*;
 
 public:
-    static CoroutinePoolConfig* GetGlobalConfig();
+    static Config::ptr GetGlobalConfig();
     static void setGlobalConfig(uint32_t pool_size, uint32_t stack_size);
 
 public:
@@ -32,9 +33,28 @@ public:
 // handle working coroutine 
 class CoroutinePool {
 
+private:
+	class CoroutinePair {
+	public:
+		template <typename... T>
+		explicit CoroutinePair(bool use_flag, T... args) {
+            first = MAKE_UNIQUE(Coroutine, args...);
+		    second = use_flag;
+        }
+
+        // emplace_back ..... (not use but if set as delete it will can't complete compile)
+        // CoroutinePair(const CoroutinePair& rhs) = delete;
+        // CoroutinePair& operator=(const CoroutinePair& rhs) = delete;
+
+	public:
+		Coroutine::u_ptr first; // the coroutine
+		bool second;            // use flag
+	};
+
 public:
     using s_ptr = std::shared_ptr<CoroutinePool>;
     using u_ptr = std::unique_ptr<CoroutinePool>;
+    using ptr = CoroutinePool*;
 
 public:
     explicit CoroutinePool(uint32_t pool_size, uint32_t stack_size = 1024 * 128);
@@ -44,18 +64,19 @@ public:
     CoroutinePool& operator=(const CoroutinePool& rhs) = delete;
 
 public:
-    Coroutine* getCoroutine();
-    void backCoroutine(Coroutine* cor); 
+    Coroutine::ptr getCoroutine();
+    void backCoroutine(Coroutine::ptr cor); 
 
+    uint32_t getPoolSize() const;
     void resize(uint32_t new_size);      // just use to allocator more memory 
 
 public:
-    static CoroutinePool* GetGlobalCoroutinePool();
+    static CoroutinePool::ptr GetGlobalCoroutinePool();
 
-private:
+public:
 	const uint32_t m_stack_size{1024 * 128};
 
-    std::vector<std::pair<Coroutine::u_ptr, bool>> m_coroutines;    // true -> used
+    std::vector<CoroutinePair> m_coroutines;
 	MemoryPool::u_ptr m_memory_pool;
 
     std::mutex m_mutex;

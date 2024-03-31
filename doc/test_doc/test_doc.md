@@ -13,18 +13,16 @@
 ![](images/1.png)
 
 
-### Coroutine
-
-
-
 
 
 
 ### Coroutine Pool
 
+大坑，vector reserve 会调用拷贝构造？
+似乎在 vector 不为空的时候使用 reserve 会调用一次拷贝构造
 
-
-
-
+xmake f --toolchain=clang 切换 clang https://xmake.io/mirror/zh-cn/toolchain/builtin_toolchains.html
+-m debug 切换debug模式 https://www.cnblogs.com/tboox/p/11994383.html
+xmake f -v 查看配置文件
 
 ### hook function

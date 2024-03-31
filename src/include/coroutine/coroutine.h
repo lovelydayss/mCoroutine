@@ -14,6 +14,7 @@ class Coroutine {
 public:
 	using u_ptr = std::unique_ptr<Coroutine>;
 	using s_ptr = std::shared_ptr<Coroutine>;
+	using ptr = Coroutine*;
 
 public:
 	Coroutine() = default;
@@ -29,7 +30,7 @@ public:
 
 	uint32_t getCorId() const { return m_cor_id; }
 
-	uint8_t* getStackPtr() { return m_stack_sp; }
+	uint8_t* getStackPtr() const { return m_stack_sp; }
 	uint32_t getStackSize() const { return m_stack_size; }
 
 	bool getCallBackRunningFlag() const;
@@ -43,14 +44,14 @@ public:
 
 public:
 	static void Yield();               // target coroutine -> main coroutine
-	static void Resume(Coroutine* cor); // main coroutine -> target coroutine
+	static void Resume(Coroutine::ptr cor); // main coroutine -> target coroutine
 
-	static Coroutine* GetMainCoroutine();
-	static Coroutine* GetCurrentCoroutine();
+	static Coroutine::ptr GetMainCoroutine();
+	static Coroutine::ptr GetCurrentCoroutine();
 
 	static bool IsMainCoroutine();
 
-private:
+public:
 	const uint32_t m_cor_id{0};   // coroutine ID
 
 	coctx m_coctx{};              // coroutine regs
@@ -58,7 +59,7 @@ private:
 	uint8_t* m_stack_sp{nullptr}; // coroutine stack pointer
 
 	bool m_cbfunc_running_flag{false}; // true -> the callback is running, flase -> the callback func is completed
-	bool m_resume_flag{true}; // true -> the coroutine can resume, false -> can't resume
+	bool m_resume_flag{false}; // true -> the coroutine can resume, false -> can't resume
 
 	std::function<void()> m_call_back; // coroutine callback function
 

@@ -10,11 +10,11 @@ MCOROUTINE_NAMESPACE_BEGIN
 static thread_local Coroutine::u_ptr t_main_coroutine = nullptr; // main coroutine
 static thread_local std::once_flag t_singleton_main_coroutine; // main coroutine once flag
 
-static thread_local Coroutine* t_cur_coroutine = nullptr; // current coroutine(working coroutine)
+static thread_local Coroutine::ptr t_cur_coroutine = nullptr; // current coroutine(working coroutine)
 
 static std::atomic<uint32_t> t_cur_coroutine_id{1}; // 0 -> main coroutine (for every thread have a 0 coroutine)
 
-void runCallBack(Coroutine* co) { /* NOLINT */
+void runCallBack(Coroutine::ptr co) { /* NOLINT */
 
 	if (co == nullptr) {
 		ERRORFMTLOG("the coroutine can't be nullptr!");
@@ -109,12 +109,12 @@ void Coroutine::Yield() {
 	}
 
 	// 实际执行协程切换
-	Coroutine* cor = GetCurrentCoroutine();
+	Coroutine::ptr cor = GetCurrentCoroutine();
 	t_cur_coroutine = GetMainCoroutine();
 	coctx_swap(&(cor->m_coctx), &(GetMainCoroutine()->m_coctx));
 	DEBUGFMTLOG("swap back!");
 }
-void Coroutine::Resume(Coroutine* cor) {
+void Coroutine::Resume(Coroutine::ptr cor) {
 
 	if (unlikely(GetCurrentCoroutine() != GetMainCoroutine())) {
 		ERRORFMTLOG("swap error, current coroutine must be main coroutine!");
@@ -137,7 +137,7 @@ void Coroutine::Resume(Coroutine* cor) {
 	DEBUGFMTLOG("swap back!");
 }
 
-Coroutine* Coroutine::GetMainCoroutine() {
+Coroutine::ptr Coroutine::GetMainCoroutine() {
 
 	std::call_once(t_singleton_main_coroutine, []() {
 		t_main_coroutine = MAKE_UNIQUE(Coroutine);
@@ -149,7 +149,7 @@ Coroutine* Coroutine::GetMainCoroutine() {
 	return t_main_coroutine.get();
 }
 
-Coroutine* Coroutine::GetCurrentCoroutine() {
+Coroutine::ptr Coroutine::GetCurrentCoroutine() {
 
 	if (t_cur_coroutine == nullptr) {
 		DEBUGFMTLOG(
