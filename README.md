@@ -4,19 +4,22 @@
 
 ### 简介
 
-A tiny asymmetric stacked coroutine libraryu uses modern C++, based on OOP and RAII ideas. Adopt a pooling approach to resource management and provide convenient API such as coroutine creation/calls/reclaim operation.
+A tiny asymmetric stacked coroutine library uses modern C++, based on OOP and RAII ideas. Adopt a pooling approach to resource management and provide convenient API such as coroutine creation/calls/reclaim operation.
 
 ### 项目目录结构
 
 ```c++
 
-//      include/coroutine ----- fmtlog/                 --> a fast fmt style log library(C++17)
+//   out/include/coroutine ----- fmtlog/                 --> a fast fmt style log library(C++17)
 //                  | ----- coctx.h                     --> coroutine regs define
 //                  | ----- utils.h                     --> global define(macro...)
 //                  | ----- memory.h                    --> memory pool(unified memory management)
 //                  | ----- coroutine.h                 --> coroutine operator define
 //                  | ----- coroutine_pool.h            --> coroutine pool define
 //                  | ----- coroutine_hook.h            --> some coroutine hook function (in mRPC)
+//
+//   out/lib/libmcoroutine.a                            --> use (c++11) (linux static library) (default) 
+//                                                      --> modify the xmake.lua to make others version
 ```
 
 > **实现思路及更多原理性整理参考** [**conclusion**](./doc/conclusion/conclusion.md)
@@ -36,7 +39,55 @@ A tiny asymmetric stacked coroutine libraryu uses modern C++, based on OOP and R
 
 ### Test Memory Pool
 #### **Problem No.1**
-**一个关于使用 unique_ptr 进行连续内存管理的问题**&nbsp;
+
+
+> **更新：阅读完 unique_ptr 源码后发现新的写法，原问题解决**
+```c++
+// uinque_ptr 包含两种实现
+// https://en.cppreference.com/w/cpp/memory/unique_ptr
+
+template< class T, class Deleter = std::default_delete<T>> 
+class unique_ptr;
+
+template <class T, class Deleter> 
+class unique_ptr<T[], Deleter>;
+```
+
+其中第二种写法专门可用于处理数组类型构造的情况，此时对应的 make_unique 函数有
+```c++
+// make_unique 两种实现
+// https://en.cppreference.com/w/cpp/memory/unique_ptr/make_unique
+
+template< class T, class... Args >
+unique_ptr<T> make_unique( Args&&... args );
+// => std::make_unique<T>(args)
+
+template<class T>
+unique_ptr<T> make_unique( std::size_t size );
+// => std::make_unique<T[]>(size)
+```
+故对于处理 unique_ptr 的宏扩展可以进一步定义为：
+
+```c++
+#if __cplusplus >= 201402L
+
+#define MAKE_UNIQUE(T, args...) \
+    std::make_unique<T>(args)
+
+#define MAKE_UNIQUE_ARRAY(T, size) \
+    std::make_unique<T[]>(size)
+
+#else
+
+#define MAKE_UNIQUE(T, args...) \
+    std::unique_ptr<T>(new T(args))
+
+#define MAKE_UNIQUE_ARRAY(T, size) \
+    std::unique_ptr<T[]>(new T[size])
+#endif
+```
+
+**旧：一个关于使用 unique_ptr 进行连续内存管理的问题**&nbsp;
 
 在使用 unique_ptr 进行连续内存块管理（即管理由 malloc 等分配的连续堆上空间，返回首指针。如此处为 uint8_t*，标识一整段内存）时，不能使用如下写法
 
@@ -73,6 +124,8 @@ m_start = std::unique_ptr<uint8_t, free_delete>(static_cast<uint8_t*>(malloC(blo
 
 此外，对于 unique_ptr ，需要自定义删除器，以实现对于连续地址空间的正确释放，防止内存泄漏。
 ```c++
+// memory.h line 14~17
+
 class MemoryBlockGroup {
 
 public:
@@ -91,7 +144,7 @@ public:
 
 #### bug free && memory check
 
-![](./doc/document/images/test_memory.png)
+![](./doc/readme/images/test_memory.png)
 
 ### Coroutine Pool && Coroutine
 
@@ -148,7 +201,7 @@ error: /usr/lib/gcc/x86_64-linux-gnu/7.5.0/../../../../include/c++/7.5.0/bits/st
 
 #### bug free && memory check
 
-![](./doc/document/images/test_coroutine_pool.png)
+![](./doc/readme/images/test_coroutine_pool.png)
 
 
 
@@ -160,7 +213,6 @@ error: /usr/lib/gcc/x86_64-linux-gnu/7.5.0/../../../../include/c++/7.5.0/bits/st
 
 // step No.1: Config
 // Global singleton config structure
-
 mcoroutine::Config::SetGlobalConfig(0 /* pool_size default(128)*/, 4096 /* stack_size default(1024*128)*/);
 // mcoroutine::Config::GetGlobalConfig()   // -> get config
 
@@ -169,6 +221,7 @@ mcoroutine::Config::SetGlobalConfig(0 /* pool_size default(128)*/, 4096 /* stack
 auto test_pool = mcoroutine::CoroutinePool::GetGlobalCoroutinePool();
 auto test_cor = test_pool->getCoroutine();      // -> get coroutine
 
+// step No.3: set callback function
 test_cor->setCallBack([&]() {
 
     /*
@@ -181,14 +234,14 @@ test_cor->setCallBack([&]() {
 
 });
 
-// step No.3: Resume
+// step No.4: Resume
 // Resume to the coroutine can Resume
 mcoroutine::Coroutine::Resume(test_cor);
 
 // ......
 // when the callback is completed, it will yield to main coroutine automatic
 
-// step No.4 Back
+// step No.5: Back
 // Need to call bcakCoroutine to back Coroutine
 test_pool->backCoroutine(test_cor);
 

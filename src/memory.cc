@@ -2,7 +2,6 @@
 #include "coroutine/utils.h"
 #include <algorithm>
 #include <cstdint>
-#include <cstdlib>
 #include <iterator>
 #include <memory>
 #include <mutex>
@@ -10,12 +9,11 @@
 
 MCOROUTINE_NAMESPACE_BEGIN
 
-MemoryBlockGroup::MemoryBlockGroup(uint32_t block_size,
+MemoryPool::MemoryBlockGroup::MemoryBlockGroup(uint32_t block_size,
                                    uint32_t block_group_size) noexcept {
 	
-	m_start = std::unique_ptr<uint8_t, free_delete>(static_cast<uint8_t*>(malloc(block_group_size * block_size)));	
+	m_start = MAKE_UNIQUE_ARRAY(uint8_t, block_size * block_group_size);
 	m_use_flags.resize(block_group_size, false);
-	// std::fill(m_use_flags.begin(), m_use_flags.end(), false);
 
 	INFOFMTLOG("succ mmap {} bytes in memory pool, group_size = {}, block_size = {}, start address = {}",
 	           block_group_size * block_size, block_group_size, block_size, (void*)m_start.get());
