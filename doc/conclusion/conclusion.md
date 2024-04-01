@@ -26,13 +26,3 @@
 
 ## HOOK 函数
 
-
-## xmake 使用
-
-> [**工具链切换**](https://xmake.io/mirror/zh-cn/toolchain/builtin_toolchains.html)
-
-> [**DEBUG && RELEASE 模式切换**](https://www.cnblogs.com/tboox/p/11994383.html)
-
-> **查看配置文件 (xmake f -v)**
-
-> **设置标签路径 (set_targetdir("path/"))**

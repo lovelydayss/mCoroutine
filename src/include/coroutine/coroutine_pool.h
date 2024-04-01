@@ -38,12 +38,11 @@ private:
 	class CoroutinePair {
 	public:
 		template <typename... T>
-		explicit CoroutinePair(bool use_flag, T... args) {
-            first = MAKE_UNIQUE(Coroutine, args...);
-		    second = use_flag;
-        }
+		explicit CoroutinePair(bool use_flag, T... args)
+		    : first(MAKE_UNIQUE(Coroutine, args...))
+		    , second(use_flag) {}
 
-        // emplace_back ..... (not use but if set as delete it will can't complete compile)
+        // emplace_back ..... (not use but if set it as delete it will can't complete compile)
         // CoroutinePair(const CoroutinePair& rhs) = delete;
         // CoroutinePair& operator=(const CoroutinePair& rhs) = delete;
 

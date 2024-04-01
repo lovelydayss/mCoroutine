@@ -10,7 +10,7 @@ A tiny asymmetric stacked coroutine library uses modern C++, based on OOP and RA
 
 ```c++
 
-//   out/include/coroutine ----- fmtlog/                 --> a fast fmt style log library(C++17)
+//   out/include/coroutine ----- fmtlog/                --> a fast fmt style log library(C++17)
 //                  | ----- coctx.h                     --> coroutine regs define
 //                  | ----- utils.h                     --> global define(macro...)
 //                  | ----- memory.h                    --> memory pool(unified memory management)
@@ -20,22 +20,34 @@ A tiny asymmetric stacked coroutine library uses modern C++, based on OOP and RA
 //
 //   out/lib/libmcoroutine.a                            --> use (c++11) (linux static library) (default) 
 //                                                      --> modify the xmake.lua to make others version
+//
+//   include/doctest/doctest.h                          --> add when runing test file
+//                                                      --> https://github.com/doctest/doctest
 ```
 
 > **实现思路及更多原理性整理参考** [**conclusion**](./doc/conclusion/conclusion.md)
 
-### 编译环境
+### 开发环境
+
+```shell
+# gcc-12.3.0 + vscode + ssh + clangd
+
+uname -a
+# Linux ubuntu 5.4.0-150-generic #167~18.04.1-Ubuntu SMP Wed May 24 00:51:42 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux
+```
+
+### C++ 编译版本
 
 项目中通过使用宏扩展等实现对于多版本的支持，支持使用 C++11/C++14/C++17 版本进行编译&nbsp;
 * C++11 编译版本即最基础版本，实现协程库基本功能，支持常规协程操作
 * C++14 编译版本添加使用 make_unique 进行 unique_ptr 的构造，保证异常安全
 * C++17 编译版本引入 [**fmt**](https://github.com/fmtlib/fmt) 风格的高性能异步日志库 [**fmtlog**](https://github.com/MengRao/fmtlog)，支持日志打印输出等功能
 
+## 测试记录
+
 ### 测试环境
 
 测试使用开源测试框架 [**doctest**](https://github.com/doctest/doctest) 以及内存检查工具 **valgrind** 进行。
-
-## 测试记录
 
 ### Test Memory Pool
 #### **Problem No.1**
