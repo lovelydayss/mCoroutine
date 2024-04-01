@@ -18,7 +18,7 @@ A tiny asymmetric stacked coroutine library uses modern C++, based on OOP and RA
 //                  | ----- coroutine_pool.h            --> coroutine pool define
 //                  | ----- coroutine_hook.h            --> some coroutine hook function (in mRPC)
 //
-//   out/lib/libmcoroutine.a                            --> use (c++11) (linux static library) (default) 
+//   out/lib/libmcoroutine.a                            --> use (c++17) (linux static library) (default) 
 //                                                      --> modify the xmake.lua to make others version
 //
 //   include/doctest/doctest.h                          --> add when runing test file

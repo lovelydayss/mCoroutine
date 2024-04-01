@@ -18,7 +18,7 @@ static std::atomic<uint32_t> t_cur_coroutine_id{1}; // 0 -> main coroutine (for 
 
 void runCallBack(Coroutine::ptr co) { /* NOLINT */
 
-	if (co == nullptr) {
+	if (unlikely(co == nullptr)) {
 		ERRORFMTLOG("the coroutine can't be nullptr!");
 		exit(1);
 	}
@@ -148,7 +148,7 @@ Coroutine::ptr Coroutine::GetMainCoroutine() {
 
 Coroutine::ptr Coroutine::GetCurrentCoroutine() {
 
-	if (t_cur_coroutine == nullptr) {
+	if (unlikely(t_cur_coroutine == nullptr)) {
 		DEBUGFMTLOG(
 		    "the current coroutine is nullptr, set it as main coroutine!");
 		t_cur_coroutine = Coroutine::GetMainCoroutine();
